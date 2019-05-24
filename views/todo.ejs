@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Ma todolist</title>
+        <style>
+            a {text-decoration: none; color: black;}
+        </style>
+    </head>
+
+    <body>
+        <h1>Ma todolist</h1>
+
+        <ul id="todolist">
+        <% todolist.forEach(function(todo, index) { %>
+            <li><a href="/todo/supprimer/<%= index %>">✘</a> <%= todo %></li>
+        <% }); %>
+        </ul>
+
+        <form action="/todo/ajouter/" method="post" id="todoListForm">
+            <p>
+                <label for="newtodo">Que dois-je faire ?</label>
+                <input type="text" name="newtodo" id="newtodo" autofocus />
+                <input type="submit" />
+            </p>
+        </form>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+        
+            // Connexion à socket.io
+            var socket = io.connect('http://localhost:8080');
+           
+            // Quand on reçoit un message, on l'insère dans la page
+            socket.on('newtodo', function(data) {
+               // console.log("clientttttttttttttt   "+data);
+                insereMessage(data);
+                 });
+
+            
+            // Ajoute un message dans la page
+            function insereMessage(newtodo) {
+                $('#todolist').prepend("<li><a href='/todo/supprimer/<%= todolist.length %>'>✘</a>" + newtodo + "</li>");
+
+                
+            }
+            // Lorsqu'on envoie le formulaire, on transmet le message et on l'affiche sur la page
+            $('#todoListForm').submit(function () {
+                var newtodo = $('#newtodo').val();
+                socket.emit('newtodo', newtodo); // Transmet le message aux autres
+                insereMessage(newtodo); // Affiche le message aussi sur notre page
+                return false; // Permet de bloquer l'envoi "classique" du formulaire
+            });
+        </script>
+    </body>
+</html>
